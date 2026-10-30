@@ -1,3 +1,4 @@
+import json
 import io, os, secrets, sqlite3, time, warnings
 from pathlib import Path
 from contextlib import contextmanager
@@ -41,9 +42,16 @@ with db() as c:
         rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),
         comments TEXT NOT NULL, suggestions TEXT NOT NULL)""")
 
+with db() as c:
+    if 'areas' not in {r['name'] for r in c.execute('PRAGMA table_info(evaluations)')}:
+        c.execute("ALTER TABLE evaluations ADD COLUMN areas TEXT NOT NULL DEFAULT '[]'")
+
 def evaluation(c,pid):
-    row=c.execute('SELECT rating,comments,suggestions FROM evaluations WHERE project=?',(pid,)).fetchone()
-    return dict(row) if row else None
+    row=c.execute('SELECT rating,comments,suggestions,areas FROM evaluations WHERE project=?',(pid,)).fetchone()
+    if not row: return None
+    result=dict(row)
+    result['areas']=json.loads(result['areas'])
+    return result
 
 def admin(fn):
     @wraps(fn)
@@ -236,8 +244,20 @@ def save_evaluation(pid):
         abort(400,'Choose an overall rating from 1 to 5 stars.')
     if any(not isinstance(text,str) or len(text)>20000 for text in (comments,suggestions)):
         abort(400,'Comments and suggestions must each be under 20,000 characters.')
+    areas=body.get('areas',[])
+    if not isinstance(areas,list) or len(areas)>100:
+        abort(400,'Use up to 100 evaluation areas.')
+    for area in areas:
+        if not isinstance(area,dict): abort(400,'Invalid area.')
+        for key,limit in [('title',150),('comments',20000),('suggestions',20000)]:
+            if not isinstance(area.get(key),str) or len(area[key])>limit:
+                abort(400,'Each area needs a title, comments, and suggestions within the size limits.')
+        if not area['title'].strip(): abort(400,'Give each area a title.')
+        if any(area.get(key) not in ['peach','blue','mint','lavender','yellow'] for key in ['commentsColor','suggestionsColor']):
+            abort(400,'Choose one of the five pastel colors.')
     with db() as c:
         project(c,pid)
         c.execute('INSERT INTO evaluations(project,rating,comments,suggestions) VALUES(?,?,?,?) ON CONFLICT(project) DO UPDATE SET rating=excluded.rating,comments=excluded.comments,suggestions=excluded.suggestions',(pid,rating,comments.strip(),suggestions.strip()))
+        c.execute('UPDATE evaluations SET areas=? WHERE project=?',(json.dumps(areas),pid))
     return {'ok':True}
 
