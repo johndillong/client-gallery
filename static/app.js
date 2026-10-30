@@ -36,10 +36,10 @@ function renderEvaluation(p,editing=false){
         for(const [key,title] of [['comments','Comments'],['suggestions','Suggestions']]){
             if(p.evaluation[key])section.append(el('h3',title),el('p',p.evaluation[key],'evaluation-text'));
         }
-        main.append(section);return;
+        for(const area of p.evaluation.areas||[]){const card=el('article',undefined,'evaluation-area');card.append(el('h3',area.title));for(const key of ['comments','suggestions']){if(area[key]){const box=el('div',undefined,'area-box pastel-'+area[key+'Color']);box.append(el('h4',key==='comments'?'Comments':'Suggestions'),el('p',area[key],'evaluation-text'));card.append(box);}}section.append(card);}main.append(section);return;
     }
-    const saved=p.evaluation||{rating:null,comments:'',suggestions:''};
-    const draft={...(evaluationDrafts.get(p.id)||saved)};
+    const saved={...(p.evaluation||{rating:null,comments:'',suggestions:''}),areas:p.evaluation?.areas||[]};
+    const draft=structuredClone(evaluationDrafts.get(p.id)||saved);
     const form=el('form');
     const group=el('fieldset',undefined,'star-picker');
     group.append(el('legend','Overall rating'));
@@ -54,7 +54,7 @@ function renderEvaluation(p,editing=false){
     }
     const ratingText=el('p',undefined,'muted small');
     function paint(){for(const choice of choices)choice.star.classList.toggle('selected',choice.value<=draft.rating);ratingText.textContent=draft.rating?draft.rating+' out of 5':'Choose 1–5 stars';}
-    function changed(){if(JSON.stringify(draft)===JSON.stringify(saved))evaluationDrafts.delete(p.id);else evaluationDrafts.set(p.id,{...draft});}
+    function changed(){if(JSON.stringify(draft)===JSON.stringify(saved))evaluationDrafts.delete(p.id);else evaluationDrafts.set(p.id,structuredClone(draft));}
     paint();form.append(group,ratingText);
     const comments=field(form,'Comments',draft.comments,true),suggestions=field(form,'Suggestions',draft.suggestions,true);
     comments.placeholder='Your findings about the website, logo, Google Business Profile, SEO, and other areas.';
@@ -62,7 +62,36 @@ function renderEvaluation(p,editing=false){
     comments.maxLength=suggestions.maxLength=20000;
     comments.oninput=()=>{draft.comments=comments.value;changed();};
     suggestions.oninput=()=>{draft.suggestions=suggestions.value;changed();};
+    const areaList=el('div');
+    function drawAreas(focusIndex=null){
+        areaList.replaceChildren();
+        draft.areas.forEach((area,index)=>{
+            const card=el('article',undefined,'evaluation-area');
+            const title=field(card,'Area title',area.title);title.required=true;title.maxLength=150;
+            title.placeholder='Website, logo, Google Business Profile, SEO…';
+            title.oninput=()=>{area.title=title.value;changed();};
+            for(const key of ['comments','suggestions']){
+                const row=el('div',undefined,'area-edit-row'),box=el('div',undefined,'area-edit-text');
+                const text=field(box,key==='comments'?'Comments':'Suggestions',area[key],true);text.maxLength=20000;
+                text.classList.add('pastel-'+area[key+'Color']);text.oninput=()=>{area[key]=text.value;changed();};
+                const palette=el('div',undefined,'area-palette');palette.setAttribute('role','group');palette.setAttribute('aria-label',(key==='comments'?'Comments':'Suggestions')+' background color');
+                for(const color of ['peach','blue','mint','lavender','yellow']){
+                    const swatch=button('',()=>{area[key+'Color']=color;changed();for(const c of ['peach','blue','mint','lavender','yellow'])text.classList.remove('pastel-'+c);text.classList.add('pastel-'+color);for(const b of palette.children)b.setAttribute('aria-pressed',String(b===swatch));},'color-swatch pastel-'+color);
+                    swatch.setAttribute('aria-label',color);swatch.title=color;swatch.setAttribute('aria-pressed',String(area[key+'Color']===color));palette.append(swatch);
+                }
+                row.append(box,palette);card.append(row);
+            }
+            const actions=toolbar();
+            for(const [label,delta] of [['↑ Move up',-1],['↓ Move down',1]]){
+                const move=button(label,()=>{[draft.areas[index],draft.areas[index+delta]]=[draft.areas[index+delta],draft.areas[index]];changed();drawAreas(index+delta);});move.disabled=index+delta<0||index+delta>=draft.areas.length;actions.append(move);
+            }
+            actions.append(button('Remove area',()=>{if(confirm('Remove this area? Save Evaluation to apply the change.')){draft.areas.splice(index,1);changed();drawAreas();}},'danger'));
+            card.append(actions);areaList.append(card);
+            if(index===focusIndex)title.focus();
+        });
+    }
+    drawAreas();form.append(areaList,button('Add new area',()=>{draft.areas.push({title:'',comments:'',suggestions:'',commentsColor:'peach',suggestionsColor:'blue'});changed();drawAreas(draft.areas.length-1);}));
     const bar=toolbar(),save=el('button','Save Evaluation','primary');save.type='submit';bar.append(save);form.append(bar);
-    form.onsubmit=async event=>{event.preventDefault();save.disabled=true;const payload={...draft};try{await api('/api/projects/'+p.id+'/evaluation','PUT',payload);p.evaluation={...payload};Object.assign(saved,payload);if(JSON.stringify(evaluationDrafts.get(p.id))===JSON.stringify(payload))evaluationDrafts.delete(p.id);tell('Evaluation saved. Clients can view it through their project link.');}catch(error){tell(error.message);}finally{save.disabled=false;}};
+    form.onsubmit=async event=>{event.preventDefault();save.disabled=true;const payload=structuredClone(draft);try{await api('/api/projects/'+p.id+'/evaluation','PUT',payload);p.evaluation={...payload};Object.assign(saved,payload);if(JSON.stringify(evaluationDrafts.get(p.id))===JSON.stringify(payload))evaluationDrafts.delete(p.id);tell('Evaluation saved. Clients can view it through their project link.');}catch(error){tell(error.message);}finally{save.disabled=false;}};
     section.append(form);main.append(section);
 }
