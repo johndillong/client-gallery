@@ -35,6 +35,16 @@ def db():
 with db() as c:
     c.executescript('''CREATE TABLE IF NOT EXISTS projects(id TEXT PRIMARY KEY,name TEXT NOT NULL,description TEXT NOT NULL,token TEXT UNIQUE NOT NULL,shared INTEGER NOT NULL,created REAL NOT NULL);
     CREATE TABLE IF NOT EXISTS images(id TEXT PRIMARY KEY,project TEXT REFERENCES projects(id) ON DELETE CASCADE,comment TEXT NOT NULL,position INTEGER NOT NULL);''')
+with db() as c:
+    c.execute("""CREATE TABLE IF NOT EXISTS evaluations (
+        project TEXT PRIMARY KEY REFERENCES projects(id) ON DELETE CASCADE,
+        rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),
+        comments TEXT NOT NULL, suggestions TEXT NOT NULL)""")
+
+def evaluation(c,pid):
+    row=c.execute('SELECT rating,comments,suggestions FROM evaluations WHERE project=?',(pid,)).fetchone()
+    return dict(row) if row else None
+
 def admin(fn):
     @wraps(fn)
     def wrapped(*a,**kw):
@@ -114,6 +124,7 @@ def detail(pid):
             for iid in ids: (images/(iid+'.jpg')).unlink(missing_ok=True)
             return {'ok':True}
         result=dict(p)
+        result['evaluation']=evaluation(c,pid)
         result['images']=[dict(r) for r in c.execute('SELECT * FROM images WHERE project=? ORDER BY position,id',(pid,))]
         return result
 @app.post('/api/projects/<pid>/sharing')
@@ -183,7 +194,7 @@ def gallery(token):
     with db() as c:
         p=c.execute('SELECT * FROM projects WHERE token=? AND shared=1',(token,)).fetchone()
         if not p: abort(404,'This gallery link is unavailable.')
-        return {'name':p['name'],'description':p['description'],'images':[dict(r) for r in c.execute('SELECT id,comment FROM images WHERE project=? ORDER BY position,id',(p['id'],))]}
+        return {'name':p['name'],'description':p['description'],'evaluation':evaluation(c,p['id']),'images':[dict(r) for r in c.execute('SELECT id,comment FROM images WHERE project=? ORDER BY position,id',(p['id'],))]}
 @app.get('/media/<iid>')
 def media(iid):
     with db() as c:
@@ -211,5 +222,22 @@ def save_comments(pid):
             seen.add(iid)
         for item in updates:
             c.execute('UPDATE images SET comment=? WHERE id=? AND project=?',(item['comment'],item['id'],pid))
+    return {'ok':True}
+
+
+@app.put('/api/projects/<pid>/evaluation')
+@admin
+def save_evaluation(pid):
+    body=request.get_json(silent=True) or {}
+    rating=body.get('rating')
+    comments=body.get('comments','')
+    suggestions=body.get('suggestions','')
+    if type(rating) is not int or rating not in range(1,6):
+        abort(400,'Choose an overall rating from 1 to 5 stars.')
+    if any(not isinstance(text,str) or len(text)>20000 for text in (comments,suggestions)):
+        abort(400,'Comments and suggestions must each be under 20,000 characters.')
+    with db() as c:
+        project(c,pid)
+        c.execute('INSERT INTO evaluations(project,rating,comments,suggestions) VALUES(?,?,?,?) ON CONFLICT(project) DO UPDATE SET rating=excluded.rating,comments=excluded.comments,suggestions=excluded.suggestions',(pid,rating,comments.strip(),suggestions.strip()))
     return {'ok':True}
 
