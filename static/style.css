@@ -9,3 +9,36 @@ h1,h2,.brand{overflow-wrap:anywhere}.grid>*{min-width:0}button,.button{touch-act
 .evaluation{border:1px solid #ddd;border-radius:9px;padding:24px;margin:28px 0}.evaluation form{max-width:760px}.evaluation-text{white-space:pre-wrap;overflow-wrap:anywhere}.evaluation-rating{font-size:32px;letter-spacing:4px;margin:14px 0 0}.star-picker{border:0;padding:0;margin:22px 0 0;display:flex;flex-wrap:wrap;gap:6px}.star-picker legend{font-weight:600;margin-bottom:10px}.star-picker label{position:relative;display:block;margin:0;cursor:pointer}.star-picker input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer}.star-picker span{display:block;font-size:36px;line-height:48px;width:48px;text-align:center;color:#777;border:1px solid #ccc;border-radius:6px}.star-picker .selected{color:#000;background:#ffbd73;border-color:#b26213}.star-picker input:focus-visible+span{outline:3px solid #181818;outline-offset:3px}@media(max-width:600px){.evaluation{padding:16px}.evaluation .toolbar button{width:100%}.star-picker{gap:4px}.star-picker span{width:44px;font-size:32px}}
 
 .evaluation-area{border:1px solid #d6d6d6;border-radius:8px;padding:18px;margin:22px 0}.evaluation-area h3{margin:0 0 18px;overflow-wrap:anywhere}.area-box{padding:12px 16px;border-radius:6px;margin:12px 0}.area-box h4{margin:0 0 8px}.area-box p{margin:0}.area-edit-row{display:flex;align-items:center;gap:12px}.area-edit-text{flex:1;min-width:0}.area-palette{display:flex;flex-direction:column;gap:6px;padding-top:24px}.color-swatch{width:44px;height:44px;padding:0;border:1px solid #999}.color-swatch[aria-pressed=true]{outline:2px solid #181818;outline-offset:1px}.pastel-peach,.pastel-peach:hover{background:#ffe1ce;color:#181818}.pastel-blue,.pastel-blue:hover{background:#dcecff;color:#181818}.pastel-mint,.pastel-mint:hover{background:#ddf2e4;color:#181818}.pastel-lavender,.pastel-lavender:hover{background:#ece2fa;color:#181818}.pastel-yellow,.pastel-yellow:hover{background:#fff2c6;color:#181818}@media(max-width:600px){.evaluation-area{padding:12px}.area-edit-row{gap:8px}.area-palette{gap:5px}.evaluation-area .toolbar button{width:auto}}
+
+/* Soft Canvas client presentation. Admin controls retain their existing styles. */
+body.client-canvas{background:#eff1f7;color:#1c2029}
+.client-canvas>header{background:#fff;border-bottom:1px solid #e4e7ef;padding-top:24px;padding-bottom:24px}
+.client-canvas .brand{font-size:22px;letter-spacing:-.5px}
+.client-canvas main{max-width:1180px;padding:36px 28px 32px}
+.client-hero{display:grid;grid-template-columns:minmax(0,1fr) 210px;gap:32px;align-items:center;min-height:240px;padding:40px;border-radius:24px;background:radial-gradient(ellipse at 95% 10%,#63718f 0%,transparent 60%),#282a3e;color:#fff;margin-bottom:36px;box-shadow:0 12px 30px #24304b12}
+.client-intro{min-width:0}.client-eyebrow{font-size:12px;letter-spacing:2.4px;color:#eedbff;margin:0 0 14px;font-weight:700}
+.client-hero h1{font-size:clamp(30px,4.5vw,46px);line-height:1.12;letter-spacing:-1.5px;margin:0;overflow-wrap:anywhere}
+.client-hero .description{color:#e0e3ed;margin:18px 0 0;font-size:16px}
+.client-score{background:#ffffff0e;border:1px solid #ffffff28;border-radius:18px;padding:24px 16px;text-align:center;min-width:0}
+.client-score-label,.client-score-value{font-size:14px;margin:0;color:#e5e7ee}.client-stars{font-size:28px;letter-spacing:2px;color:#ffbd7d;margin:8px 0;white-space:nowrap}
+.client-section-title{font-size:25px;letter-spacing:-.6px;margin:0 0 22px;line-height:1.3}
+.client-summary{background:#fff;padding:26px;border-radius:20px;box-shadow:0 5px 25px #192b4210;margin-bottom:24px}
+.client-summary h3{font-size:20px;margin:0 0 16px}.client-summary-notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.client-areas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;align-items:start}
+.client-canvas .evaluation-area{border:0;border-radius:20px;background:#fff;padding:28px;margin:0;box-shadow:0 5px 25px #192b4210;min-width:0}
+.client-area-label{display:table;background:#edf0f7;color:#575e6b;border-radius:6px;padding:4px 8px;font-size:12px;letter-spacing:1.5px;margin-bottom:14px}
+.client-canvas .evaluation-area h3{font-size:23px;letter-spacing:-.5px;margin:0 0 20px}
+.client-canvas .area-box{padding:20px;border-radius:12px;margin:14px 0 0}.client-summary .area-box{margin:0}
+.client-canvas .area-box h4{font-size:15px;margin:0 0 10px}.client-canvas .evaluation-text{font-size:16px;line-height:1.65}
+.client-gallery-heading{display:flex;justify-content:space-between;gap:16px;align-items:center;margin:38px 0 22px}.client-gallery-heading .client-section-title{margin:0}
+.client-canvas .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;margin:0}
+.client-canvas .card{border:0;border-radius:20px;padding:14px 14px 20px;box-shadow:0 5px 25px #192b4210;background:#fff}
+.client-canvas .image-button{border-radius:12px;overflow:hidden;background:#eef0f4}
+.client-canvas .card img{height:300px;object-fit:contain;background:#eef0f4}
+.client-canvas .comment{margin-top:14px;border-radius:4px;font-weight:700;padding:4px 7px;background:#ff9b38;color:#000}
+.client-canvas dialog .comment{margin-top:0}.client-canvas dialog{border-radius:18px}
+.client-footer{border-top:1px solid #dce0e9;padding:24px 0 0;margin-top:40px;color:#606875;font-size:14px}
+.client-canvas .empty{background:#fff;border-color:#ced3df;color:#606875}
+@media(min-width:701px){.client-hero:has(.client-intro:only-child){grid-template-columns:1fr}}
+@media(max-width:700px){.client-canvas>header{padding:20px}.client-canvas .brand{font-size:20px;line-height:1.4}.client-canvas main{padding:22px 16px 28px}.client-hero{grid-template-columns:1fr;gap:24px;padding:26px;border-radius:20px;min-height:0;margin-bottom:28px}.client-hero h1{font-size:34px;letter-spacing:-1px}.client-score{max-width:240px;width:100%;text-align:left;padding:18px 20px}.client-areas,.client-summary-notes,.client-canvas .grid{grid-template-columns:1fr;gap:20px}.client-summary,.client-canvas .evaluation-area{padding:22px}.client-section-title{font-size:23px}.client-canvas .area-box{padding:16px}.client-canvas .card img{height:auto;max-height:65dvh;min-height:140px}.client-gallery-heading{margin-top:30px}.client-canvas .card{padding:12px 12px 18px}}
+@media(prefers-reduced-motion:no-preference){.client-canvas .image-button img{transition:transform .2s ease}.client-canvas .image-button:hover img{transform:scale(1.02)}}
